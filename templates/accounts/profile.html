@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Profile</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">My Profile</h1>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header"><h5 class="mb-0">Personal Information</h5></div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save me-1"></i>Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body text-center py-4">
+        <div class="profile-avatar-lg mx-auto mb-3">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="avatar" class="rounded-circle" width="80" height="80"/>
+          {% else %}
+            <div class="avatar-placeholder-lg">{{ user.username|first|upper }}</div>
+          {% endif %}
+        </div>
+        <h5>{{ user.get_full_name|default:user.username }}</h5>
+        <span class="badge bg-primary">{{ user.get_role_display }}</span>
+        <p class="text-muted mt-2 small">{{ user.email }}</p>
+        <hr/>
+        <p class="small text-muted mb-0">Workspace: <strong>{{ current_tenant.name }}</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

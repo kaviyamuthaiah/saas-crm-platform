@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SaaS Platform{% endblock %} | {{ current_tenant.name|default:"SaaS Platform" }}</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Custom CSS -->
+  <link href="/static/css/main.css" rel="stylesheet"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- ════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon">
+      <i class="bi bi-layers-fill"></i>
+    </div>
+    <div class="sidebar-brand-text">
+      <span class="brand-name">{{ current_tenant.name|truncatechars:16 }}</span>
+      <span class="brand-plan badge">{{ current_tenant.plan|upper }}</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider" />
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+
+    <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i>
+      <span>Dashboard</span>
+    </a>
+
+    <div class="nav-section-label mt-3">Work</div>
+
+    <a href="{% url 'projects:project_list' %}" class="nav-item {% if 'projects' in request.path and 'tasks' not in request.path %}active{% endif %}">
+      <i class="bi bi-kanban"></i>
+      <span>Projects</span>
+    </a>
+
+    <a href="{% url 'projects:task_list' %}" class="nav-item {% if 'tasks' in request.path %}active{% endif %}">
+      <i class="bi bi-check2-square"></i>
+      <span>Tasks</span>
+    </a>
+
+    <div class="nav-section-label mt-3">CRM</div>
+
+    <a href="{% url 'crm:lead_list' %}" class="nav-item {% if 'leads' in request.path %}active{% endif %}">
+      <i class="bi bi-funnel"></i>
+      <span>Leads</span>
+    </a>
+
+    <a href="{% url 'crm:contact_list' %}" class="nav-item {% if 'contacts' in request.path %}active{% endif %}">
+      <i class="bi bi-people"></i>
+      <span>Contacts</span>
+    </a>
+
+    {% if user.is_tenant_admin %}
+    <div class="nav-section-label mt-3">Admin</div>
+
+    <a href="{% url 'tenants:settings' %}" class="nav-item {% if 'settings' in request.path and 'members' not in request.path %}active{% endif %}">
+      <i class="bi bi-gear"></i>
+      <span>Workspace</span>
+    </a>
+
+    <a href="{% url 'tenants:members' %}" class="nav-item {% if 'members' in request.path %}active{% endif %}">
+      <i class="bi bi-person-badge"></i>
+      <span>Team</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <a href="{% url 'accounts:profile' %}" class="sidebar-user">
+      <div class="user-avatar">
+        {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" alt="avatar"/>
+        {% else %}
+          <span>{{ user.username|first|upper }}</span>
+        {% endif %}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="user-role">{{ user.get_role_display }}</div>
+      </div>
+    </a>
+    <a href="{% url 'accounts:logout' %}" class="logout-btn" title="Logout">
+      <i class="bi bi-box-arrow-right"></i>
+    </a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN CONTENT WRAPPER
+════════════════════════════════════════════ -->
+<div class="main-wrapper" id="mainWrapper">
+
+  <!-- TOP NAVBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle btn btn-link" id="sidebarToggle">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+      <nav aria-label="breadcrumb" class="d-none d-md-flex">
+        <ol class="breadcrumb mb-0">
+          {% block breadcrumb %}
+          <li class="breadcrumb-item active">Dashboard</li>
+          {% endblock %}
+        </ol>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-actions">
+        <a href="{% url 'projects:task_create' %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-lg me-1"></i>New Task
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- FLASH MESSAGES -->
+  {% if messages %}
+  <div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
+    {% block content %}{% endblock %}
+  </main>
+
+</div><!-- /main-wrapper -->
+
+{% else %}
+<!-- Unauthenticated: just render the block directly (login/register pages) -->
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js (for dashboard) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- Custom JS -->
+<script src="/static/js/main.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

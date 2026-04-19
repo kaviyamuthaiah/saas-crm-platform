@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Edit{% else %}New{% endif %} Project{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'projects:project_list' %}">Projects</a></li>
+<li class="breadcrumb-item active">{% if object %}Edit{% else %}New{% endif %} Project</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{% if object %}Edit Project{% else %}New Project{% endif %}</h1>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i>{% if object %}Save Changes{% else %}Create Project{% endif %}
+            </button>
+            <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

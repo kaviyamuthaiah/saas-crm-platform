@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Workspace Settings{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Workspace Settings</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Workspace Settings</h1>
+  <p class="text-muted">Manage your organisation profile and preferences.</p>
+</div>
+
+<div class="row g-4">
+
+  <!-- Workspace profile -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><h6 class="mb-0">Organisation Profile</h6></div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {{ tenant_form|crispy }}
+          {{ settings_form|crispy }}
+          <button type="submit" class="btn btn-primary mt-2">
+            <i class="bi bi-save me-1"></i>Save Settings
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info sidebar -->
+  <div class="col-lg-4">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><h6 class="mb-0">Workspace Info</h6></div>
+      <div class="card-body">
+        <dl class="row small mb-0">
+          <dt class="col-5 text-muted">Name</dt>
+          <dd class="col-7">{{ current_tenant.name }}</dd>
+          <dt class="col-5 text-muted">Slug</dt>
+          <dd class="col-7"><code>{{ current_tenant.slug }}</code></dd>
+          <dt class="col-5 text-muted">Plan</dt>
+          <dd class="col-7">
+            <span class="badge bg-primary">{{ current_tenant.plan|upper }}</span>
+          </dd>
+          <dt class="col-5 text-muted">Created</dt>
+          <dd class="col-7">{{ current_tenant.created_at|date:"M d, Y" }}</dd>
+        </dl>
+        <hr/>
+        <a href="{% url 'tenants:members' %}" class="btn btn-outline-primary btn-sm w-100">
+          <i class="bi bi-people me-1"></i>Manage Team Members
+        </a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-danger">
+      <div class="card-header text-danger"><h6 class="mb-0">Danger Zone</h6></div>
+      <div class="card-body">
+        <p class="small text-muted">Destructive actions cannot be undone. Proceed with caution.</p>
+        <button class="btn btn-outline-danger btn-sm" disabled>Deactivate Workspace</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

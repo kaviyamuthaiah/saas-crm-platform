@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Team Members{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'tenants:settings' %}">Settings</a></li>
+<li class="breadcrumb-item active">Team</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+  <h1 class="page-title">Team Members</h1>
+  <a href="{% url 'tenants:invite' %}" class="btn btn-primary">
+    <i class="bi bi-person-plus me-1"></i>Invite Member
+  </a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in members %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-sm">{{ member.username|first|upper }}</div>
+                <div>
+                  <div class="fw-medium">{{ member.get_full_name|default:member.username }}</div>
+                  <div class="text-muted small">@{{ member.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-muted small">{{ member.email|default:"—" }}</td>
+            <td>
+              <span class="badge {% if member.role == 'admin' %}bg-primary{% else %}bg-secondary{% endif %}">
+                {{ member.get_role_display }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {% if member.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                {% if member.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </td>
+            <td class="text-muted small">{{ member.date_joined|date:"M d, Y" }}</td>
+            <td class="text-end">
+              {% if member != request.user %}
+              <form method="post" action="{% url 'tenants:remove_member' member.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Deactivate {{ member.username }}?')">
+                  <i class="bi bi-person-x"></i>
+                </button>
+              </form>
+              {% else %}
+              <span class="text-muted small">You</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
