@@ -68,6 +68,11 @@
       <span>Contacts</span>
     </a>
 
+    <a href="{% url 'crm:estimate_list' %}" class="nav-item {% if 'estimates' in request.path %}active{% endif %}">
+      <i class="bi bi-quote"></i>
+      <span>Estimates</span>
+    </a>
+
     {% if user.is_tenant_admin %}
     <div class="nav-section-label mt-3">Admin</div>
 

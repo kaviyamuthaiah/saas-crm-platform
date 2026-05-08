@@ -2,7 +2,7 @@
 crm/forms.py
 """
 from django import forms
-from apps.crm.models import Lead, Contact
+from apps.crm.models import Lead, Contact,Estimate
 
 
 class ContactForm(forms.ModelForm):
@@ -34,3 +34,53 @@ class LeadForm(forms.ModelForm):
         if tenant:
             self.fields['owner'].queryset = tenant.members.filter(is_active=True)
             self.fields['contact'].queryset = Contact.objects.filter(tenant=tenant)
+
+class EstimateForm(forms.ModelForm):
+
+    class Meta:
+        model = Estimate
+
+        fields = (
+            'lead',
+            'estimate_number',
+            'estimate_date',
+            'expiry_date',
+            'subtotal',
+            'tax',
+            'discount',
+            'total_amount',
+            'status',
+            'notes',
+            'created_by',
+        )
+
+        widgets = {
+
+            'estimate_date': forms.DateInput(
+                attrs={'type': 'date'}
+            ),
+
+            'expiry_date': forms.DateInput(
+                attrs={'type': 'date'}
+            ),
+
+            'notes': forms.Textarea(
+                attrs={'rows': 3}
+            ),
+
+        }
+
+    def __init__(self, *args, tenant=None, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        if tenant:
+
+            self.fields['lead'].queryset = Lead.objects.filter(
+                tenant=tenant,
+                is_converted=False
+            )
+
+            self.fields['created_by'].queryset = tenant.members.filter(
+                is_active=True
+            )

@@ -66,6 +66,15 @@ class Lead(models.Model):
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
     notes = models.TextField(blank=True)
     expected_close_date = models.DateField(null=True, blank=True)
+
+    # NEW FIELDS
+    is_converted = models.BooleanField(default=False)
+
+    converted_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -74,3 +83,116 @@ class Lead(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Estimate(models.Model):
+
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Draft'
+        SENT = 'sent', 'Sent'
+        ACCEPTED = 'accepted', 'Accepted'
+        REJECTED = 'rejected', 'Rejected'
+
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.CASCADE,
+        related_name='estimates'
+    )
+
+    lead = models.ForeignKey(
+        Lead,
+        on_delete=models.CASCADE,
+        related_name='estimates'
+    )
+
+    estimate_number = models.CharField(
+        max_length=50,
+        unique=True
+    )
+
+    title = models.CharField(max_length=255)
+
+    estimate_date = models.DateField()
+
+    expiry_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    subtotal = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    tax = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    discount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    notes = models.TextField(blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT
+    )
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.estimate_number
+    
+class EstimateItem(models.Model):
+
+    estimate = models.ForeignKey(
+        Estimate,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+
+    service_name = models.CharField(max_length=255)
+
+    description = models.TextField(blank=True)
+
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=1
+    )
+
+    unit_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    total_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+

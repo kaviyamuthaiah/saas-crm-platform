@@ -13,7 +13,7 @@ saas_platform/
 │   ├── accounts/          # Custom User model, auth views (login, register, profile)
 │   ├── dashboard/         # Aggregated stats dashboard
 │   ├── projects/          # Projects + Tasks CRUD
-│   ├── crm/               # Leads + Contacts CRUD
+│   ├── crm/               # Leads + Contacts + estimates CRUD
 │   └── tenants/           # Tenant model, middleware, settings, team management
 ├── saas_platform/         # Django project config (settings, urls, wsgi)
 ├── static/
@@ -25,7 +25,7 @@ saas_platform/
 │   ├── accounts/          # Login, register, profile
 │   ├── dashboard/         # Dashboard with stat cards + charts
 │   ├── projects/          # Project & Task CRUD templates
-│   ├── crm/               # Lead & Contact CRUD templates
+│   ├── crm/               # Lead & Contact & estimates CRUD templates
 │   ├── tenants/           # Settings, members, invite
 │   └── partials/          # Reusable fragments (pagination)
 ├── requirements.txt

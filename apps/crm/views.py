@@ -10,6 +10,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 
 from apps.crm.models import Lead, Contact
 from apps.crm.forms import LeadForm, ContactForm
+from apps.crm.models import Estimate
+from apps.crm.forms import EstimateForm
 from apps.tenants.mixins import TenantQuerysetMixin, TenantFormMixin
 
 
@@ -151,4 +153,147 @@ class LeadDeleteView(LoginRequiredMixin, TenantQuerysetMixin, DeleteView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Lead deleted.')
+        return super().form_valid(form)
+
+# ──────────────────────────────────────────────
+# Estimate Views
+# ──────────────────────────────────────────────
+class EstimateListView(LoginRequiredMixin, TenantQuerysetMixin, ListView):
+
+    model = Estimate
+    template_name = 'crm/estimate_list.html'
+    context_object_name = 'estimates'
+    paginate_by = 15
+
+    def get_queryset(self):
+
+        qs = super().get_queryset()
+
+        status = self.request.GET.get('status')
+
+        if status:
+            qs = qs.filter(status=status)
+
+        q = self.request.GET.get('q', '')
+
+        if q:
+            qs = qs.filter(
+                estimate_number__icontains=q
+            ) | qs.filter(
+                lead__title__icontains=q
+            )
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+
+        ctx = super().get_context_data(**kwargs)
+
+        ctx['status_choices'] = Estimate.Status.choices
+
+        return ctx
+
+class EstimateDetailView(
+    LoginRequiredMixin,
+    TenantQuerysetMixin,
+    DetailView
+):
+
+    model = Estimate
+    template_name = 'crm/estimate_detail.html'
+    context_object_name = 'estimate'
+
+class EstimateCreateView(
+    LoginRequiredMixin,
+    TenantFormMixin,
+    CreateView
+):
+
+    model = Estimate
+    form_class = EstimateForm
+    template_name = 'crm/estimate_form.html'
+    success_url = reverse_lazy('crm:estimate_list')
+
+    def get_form_kwargs(self):
+
+        kw = super().get_form_kwargs()
+
+        kw['tenant'] = self.request.tenant
+
+        return kw
+
+    def form_valid(self, form):
+
+        messages.success(
+            self.request,
+            'Estimate created successfully.'
+        )
+
+        return super().form_valid(form)
+class EstimateUpdateView(
+    LoginRequiredMixin,
+    TenantQuerysetMixin,
+    TenantFormMixin,
+    UpdateView
+):
+
+    model = Estimate
+    form_class = EstimateForm
+    template_name = 'crm/estimate_form.html'
+    success_url = reverse_lazy('crm:estimate_list')
+
+    def get_form_kwargs(self):
+
+        kw = super().get_form_kwargs()
+
+        kw['tenant'] = self.request.tenant
+
+        return kw
+
+    def form_valid(self, form):
+
+        estimate = form.save()
+
+        # Convert lead to contact if accepted
+        if estimate.status == 'accepted':
+
+            lead = estimate.lead
+
+            if not lead.is_converted:
+
+                contact = Contact.objects.create(
+                    tenant=lead.tenant,
+                    name=lead.title,
+                    email=lead.email,
+                    phone=lead.phone,
+                    company=lead.company
+                )
+
+                lead.is_converted = True
+                lead.converted_contact = contact
+                lead.save()
+
+        messages.success(
+            self.request,
+            'Estimate updated successfully.'
+        )
+
+        return super().form_valid(form)
+class EstimateDeleteView(
+    LoginRequiredMixin,
+    TenantQuerysetMixin,
+    DeleteView
+):
+
+    model = Estimate
+    template_name = 'crm/estimate_confirm_delete.html'
+    success_url = reverse_lazy('crm:estimate_list')
+
+    def form_valid(self, form):
+
+        messages.success(
+            self.request,
+            'Estimate deleted successfully.'
+        )
+
         return super().form_valid(form)
